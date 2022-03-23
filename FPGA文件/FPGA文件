@@ -1,0 +1,417 @@
+**6.2.7system-user.dtsi**</br>
+/include/ "system-conf.dtsi" 
+#include <dt-bindings/gpio/gpio.h> 
+/ { 
+		model = "Navigator Development Board"; 
+		compatible = "alientek,zynq-7020","xlnx,zynq-7000"; 
+		
+		leds {
+		compatible = "gpio-leds";
+		gpio-led1 { 
+		label = "led1"; 
+		gpios = <&gpio0 54 GPIO_ACTIVE_HIGH>; 
+		linux,default-trigger = "heartbeat"; 
+		}; 
+		
+		gpio-led2 { 
+		label = "pl_led0";
+		gpios = <&gpio0 55 GPIO_ACTIVE_HIGH>; 
+		default-state = "on";
+		}; 
+		
+		gpio-led3 { 
+		label = "pl_led1"; 
+		gpios = <&gpio0 56 GPIO_ACTIVE_HIGH>; 
+		default-state = "on"; 
+		}; 
+		
+		gpio-led4 { 
+		label = "ps_led0"; 
+		gpios = <&gpio0 7 GPIO_ACTIVE_HIGH>;
+		default-state = "on"; 
+		}; 
+		gpio-led5 { 
+		label = "ps_led1";
+		gpios = <&gpio0 8 GPIO_ACTIVE_HIGH>;
+		default-state = "on"; 
+		};
+		
+		gpio-led6 { 
+		label = "led2";
+		gpios = <&gpio0 0 GPIO_ACTIVE_HIGH>;
+		default-state = "on"; 
+		}; 
+	}; 
+	
+		keys { 
+		compatible = "gpio-keys"; 
+		autorepeat; 
+		
+		gpio-key1 {
+		label = "pl_key1";
+		gpios = <&gpio0 57 GPIO_ACTIVE_LOW>;
+		linux,code = <105>; // Right
+		debounce-interval = <20>; // 20ms 
+		}; 
+		
+		gpio-key2 {
+		label = "pl_key2";
+		gpios = <&gpio0 58 GPIO_ACTIVE_LOW>;
+		linux,code = <106>; // Left 
+		debounce-interval = <20>; 
+		}; 
+		
+		gpio-key3 { 
+		label = "ps_key1"; 
+		gpios = <&gpio0 12 GPIO_ACTIVE_LOW>; 
+		linux,code = <103>; // Up 
+		debounce-interval = <20>; 
+		}; 
+		
+		gpio-key4 {
+		label = "ps_key2"; 
+		gpios = <&gpio0 11 GPIO_ACTIVE_LOW>; 
+		linux,code = <108>; // Down
+		debounce-interval = <20>; 
+		}; 
+		
+		touch-key {
+				   label = "touch_key";
+				   gpios = <&gpio0 59 GPIO_ACTIVE_HIGH>; 
+				   linux,code = <28>; // ENTER 
+				   gpio-key,wakeup; 
+				   debounce-interval = <20>; 
+			   }; 
+		   }; 
+		   
+		   beeper { 
+		   compatible = "gpio-beeper"; 
+		   gpios = <&gpio0 60 GPIO_ACTIVE_HIGH>; 
+		   }; 
+		   
+		   usb_phy0: phy0@e0002000 {
+		   compatible = "ulpi-phy"; 
+		   #phy-cells = <0>;
+		   reg = <0xe0002000 0x1000>; 
+		   view-port = <0x0170>; 
+		   drv-vbus; 
+	   }; 
+   };
+   &i2c0 {
+   clock-frequency = <100000>; 
+   
+   eeprom@50 { 
+   compatible = "24c64";
+   reg = <0x50>; 
+   pagesize = <32>; 
+   }; 
+   
+   rtc@51 {
+   compatible = "nxp,pcf8563"; 
+   reg = <0x51>; 
+   }; 
+}; 
+
+&usb0 {
+ dr_mode = "otg"; 
+ usb-phy = <&usb_phy0>; 
+ };
+
+
+**9.4设备树**</br>
+&pwm_0 {
+	compatible = "digilent,axi-pwm"; 
+	#pwm-cells = <2>; 
+	clock-names = "pwm"; 
+	npwm = <1>; 
+	}; 
+	
+	&lcd_vtc { 
+		compatible = "xlnx,v-tc-5.01.a";
+	}; 
+	
+	&lcd_vdma { 
+		dma-ranges = <0x00000000 0x00000000 0x40000000>; // 1GB 
+	};
+	
+	&hdmi_vtc { 
+		clocks = <&hdmi_dynclk>, <&clkc 15>;
+		compatible = "xlnx,v-tc-5.01.a";
+		}; 
+		
+	&hdmi_dynclk { 
+		compatible = "digilent,axi-dynclk";
+		#clock-cells = <0>;
+	}; 
+		
+	&hdmi_vdma {
+		dma-ranges = <0x00000000 0x00000000 0x40000000>; // 1GB 
+	}; 
+	
+	&amba_pl { 
+		xlnx_vdmafb_lcd { 
+			compatible = "xilinx,vdmafb"; 
+			status = "okay";
+
+			vtc = <&lcd_vtc>; 
+			clocks = <&clk_wiz_0 0>; 
+			clock-names = "lcd_pclk"; 
+			
+			dmas = <&lcd_vdma 0>;
+			dma-names = "lcd_vdma"; 
+			pwms = <&pwm_0 0 5000000>; 
+			reset-gpio = <&gpio0 61 GPIO_ACTIVE_LOW>;
+			lcdID-gpio = <&gpio1 0 0 GPIO_ACTIVE_LOW &gpio1 1 0 GPIO_ACTIVE_LOW &gpio1 2 0 GPIO_ACTIVE_LOW>; 
+			
+			display-timings { 
+				timing_4342: timing0 { 
+					clock-frequency = <9000000>;
+					hactive = <480>; 
+					vactive = <272>;
+					hback-porch = <40>; 
+					hfront-porch = <5>; 
+					hsync-len = <1>; 
+					vback-porch = <8>; 
+					vfront-porch = <8>; 
+					vsync-len = <1>;
+					hsync-active = <0>;
+					vsync-active = <0>; 
+					de-active = <1>; 
+					pixelclk-active = <0>; 
+				}; 
+				timing_4384: timing1 { 
+					clock-frequency = <31000000>;
+					hactive = <800>; 
+					vactive = <480>; 
+					hback-porch = <88>; 
+					hfront-porch = <40>; 
+					hsync-len = <48>; 
+					vback-porch = <32>;
+					vfront-porch = <13>;
+					vsync-len = <3>;
+					hsync-active = <0>; 
+					vsync-active = <0>; 
+					de-active = <1>; 
+					pixelclk-active = <0>; 
+				}; 
+				timing_7084: timing2 { 
+					clock-frequency = <33300000>; 
+					hactive = <800>; 
+					vactive = <480>; 
+					hback-porch = <46>; 
+					hfront-porch = <210>; 
+					hsync-len = <1>; 
+					vback-porch = <23>; 
+					vfront-porch = <22>; 
+					vsync-len = <1>; 
+					hsync-active = <0>;
+					vsync-active = <0>; 
+					de-active = <1>; 
+					pixelclk-active = <0>;
+				}; 
+				timing_7016: timing3 { 
+					clock-frequency = <51200000>;
+					hactive = <1024>; 
+					vactive = <600>; 
+					hback-porch = <140>;
+					hfront-porch = <160>;
+					hsync-len = <20>; 
+					vback-porch = <20>; 
+					vfront-porch = <12>; 
+					vsync-len = <3>; 
+					hsync-active = <0>; 
+					vsync-active = <0>;
+					de-active = <1>; 
+					pixelclk-active = <0>;
+				};
+				timing_1018: timing4 { 
+					clock-frequency = <71100000>; 
+					hactive = <1280>; 
+					vactive = <800>; 
+					hback-porch = <80>; 
+					hfront-porch = <70>; 
+					hsync-len = <10>; 
+					vback-porch = <10>; 
+					vfront-porch = <10>; 
+					vsync-len = <3>; 
+					hsync-active = <0>; 
+					vsync-active = <0>; 
+					de-active = <1>; 
+					pixelclk-active = <0>;
+				}; 
+			}; 
+		}; 
+		
+		xlnx_vdmafb_hdmi { 
+			compatible = "xilinx,vdmafb";
+			status = "okay";
+			vtc = <&hdmi_vtc>; 
+			clocks = <&hdmi_dynclk>;
+			clock-names = "lcd_pclk";
+			dmas = <&hdmi_vdma 0>; 
+			dma-names = "lcd_vdma";
+			
+			hdmi; 
+			
+			display-timings { 
+				timing_1080p: timing5 {
+					clock-frequency = <148500000>; 
+					hactive = <1920>; 
+					vactive = <1080>; 
+					hback-porch = <148>; 
+					hsync-len = <44>;
+					hfront-porch = <88>;
+					vback-porch = <36>;
+					vsync-len = <5>; 
+					vfront-porch = <4>;
+					hsync-active = <0>; 
+					vsync-active = <0>; 
+					de-active = <0>; 
+					pixelclk-active = <1>;
+				}; 
+			}; 
+		}; 
+	};
+
+
+**20.3systm-top.dts**</br>
+/dts-v1/;
+#include "zynq-7000.dtsi" 
+#include "pl.dtsi" 
+#include "pcw.dtsi" 
+/ { 
+		chosen { 
+				bootargs = "earlycon"; 
+				stdout-path = "serial0:115200n8"; 
+		}; 
+		aliases {
+				ethernet0 = &gem0; 
+				i2c0 = &i2c2; 
+				i2c1 = &i2c0; 
+				i2c2 = &i2c1; 
+				serial0 = &uart0; 
+				serial1 = &uart1; 
+				spi0 = &qspi; 
+		}; 
+		memory { 
+				device_type = "memory"; 
+				reg = <0x0 0x20000000>; 
+		}; 
+};
+
+
+//修改之后
+/dts-v1/; 
+#include "zynq-7000.dtsi"
+#include "pl.dtsi"
+#include "pcw.dtsi"
+/ { 
+		model = "Alientek ZYNQ Development Board";
+		chosen {
+				bootargs = "console=ttyPS0,115200 earlyprintk root=/dev/mmcblk0p2 rw rootwait"; 
+				stdout-path = "serial0:115200n8"; 
+		}; 
+		aliases {
+				ethernet0 = &gem0;
+				i2c0 = &i2c2;
+				i2c1 = &i2c0;
+				i2c2 = &i2c1;
+				serial0 = &uart0;
+				serial1 = &uart1;
+				spi0 = &qspi;
+		}; 
+		memory {
+				device_type = "memory"; 
+				reg = <0x0 0x20000000>; 
+			};
+}; 
+&gem0 {
+		local-mac-address = [00 0a 35 00 1e 53];
+};
+&qspi {
+		#address-cells = <1>;
+		#size-cells = <0>; 
+		flash0: flash@0 {
+				compatible = "n25q512a","micron,m25p80";
+				reg = <0x0>;
+				#address-cells = <1>;
+				#size-cells = <1>;
+				spi-max-frequency = <50000000>;
+				partition@0x00000000 {
+						label = "boot";
+						reg = <0x00000000 0x00500000>;
+				};
+				partition@0x00500000 {
+						label = "bootenv";
+						reg = <0x00500000 0x00020000>;
+				};
+				partition@0x00520000 {
+						label = "kernel";
+						reg = <0x00520000 0x00a80000>;
+				};
+				partition@0x00fa0000 {
+						label = "spare";
+						reg = <0x00fa0000 0x00000000>;
+				};
+		};
+};
+
+
+**20.3**</br>
+/dts-v1/; 
+#include "zynq-7000.dtsi"
+#include "pl.dtsi" 
+#include "pcw.dtsi" 
+/ { 
+	model = "Alientek ZYNQ Development Board"; 
+	chosen {
+			bootargs = "console=ttyPS0,115200 earlyprintk root=/dev/mmcblk0p2 rw rootwait"; 
+			stdout-path = "serial0:115200n8";
+	}; 
+	aliases {
+			ethernet0 = &gem0; 
+			i2c0 = &i2c2;
+			i2c1 = &i2c0; 
+			i2c2 = &i2c1; 
+			serial0 = &uart0; 
+			serial1 = &uart1; 
+			spi0 = &qspi; 27 
+	}; 
+	memory {
+			device_type = "memory"; 
+			reg = <0x0 0x20000000>;
+	}; 
+}; 
+
+&gem0 {
+		local-mac-address = [00 0a 35 00 1e 53]; 
+}; 
+
+&qspi {
+		#address-cells = <1>;
+		#size-cells = <0>; 
+		flash0: flash@0 {
+				compatible = "n25q512a","micron,m25p80"; 
+				reg = <0x0>; 
+				#address-cells = <1>; 
+				#size-cells = <1>; 
+				spi-max-frequency = <50000000>; 
+				partition@0x00000000 { 
+						label = "boot"; 
+						reg = <0x00000000 0x00500000>; 
+				};
+				partition@0x00500000 { 
+						label = "bootenv"; 
+						reg = <0x00500000 0x00020000>; 
+				}; 
+				partition@0x00520000 { 
+						label = "kernel"; 
+						reg = <0x00520000 0x00a80000>; 
+				}; 
+				partition@0x00fa0000 { 
+						label = "spare"; 
+						reg = <0x00fa0000 0x00000000>; 
+				}; 
+		}; 
+};
+
